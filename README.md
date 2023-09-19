@@ -4,9 +4,9 @@ A charge controller for iOS devices that queries the battery level with cfgutil 
 Prerequisites:
 - Get uhubctl: https://github.com/mvp/uhubctl
 - Get this python3 uhubctl wrapper: https://github.com/nbuchwitz/python3-uhubctl
-- Install Apple Configurator
-- Install Automation Tools from the Apple Configuration menu
-- Have a USB hub that supports being controlled programatically (see https://github.com/mvp/uhubctl for a list)
+- Get Apple Configurator: https://support.apple.com/apple-configurator
+- Install "Automation Tools" from the Apple Configuration menu
+- Have a USB hub that supports being controlled programmatically (see https://github.com/mvp/uhubctl for a list)
 
 Command line options:
   -h, --help       show this help message and exit
