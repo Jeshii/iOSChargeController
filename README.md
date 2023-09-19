@@ -9,7 +9,7 @@ Prerequisites:
 - Have a USB hub that supports being controlled programmatically (see https://github.com/mvp/uhubctl for a list)
 
 Command line options:
-  -h, --help       show this help message and exit
-  -l batteryLevel  Desired maintenance charge level (default is 80)
-  -m sleepMin      Minutes between checks (default is 10)
-  -v               Verbose mode
+-  -h, --help       show this help message and exit
+-  -l batteryLevel  Desired maintenance charge level (default is 80)
+-  -m sleepMin      Minutes between checks (default is 10)
+-  -v               Verbose mode
