@@ -9,11 +9,15 @@ from datetime import datetime
 #commands used
 batteryCommand = ["cfgutil", "get", "batteryCurrentCapacity"]
 
+#backoff values
+currentDelay = 5
+maxDelay = 60
+minDelay = 1
+backoffFactor = 2  # Factor by which the delay is increased
+
 parser = argparse.ArgumentParser(description='Charge a USB attached iOS device to a specified level')
 parser.add_argument('-l', metavar='batteryLevel',
                     help='Desired maintenance charge level (default is 80%)')
-parser.add_argument('-m', metavar='sleepMin',
-                    help='Minutes between checks (default is 10 minutes)')
 parser.add_argument('-v', action='store_true',
                     help='Verbose mode')
 
@@ -23,11 +27,6 @@ if args.l:
     batteryLevel = args.l
 else:
     batteryLevel = 80
-
-if args.m:
-    sleepMin = args.m
-else:
-    sleepMin = 10
 
 if args.v:
     verbose = True
@@ -81,13 +80,21 @@ while True:
         batteryNumber = -1
 
     if (batteryNumber >= int(batteryLevel)):
+        currentDelay = min(currentDelay * backoffFactor, maxDelay)
+        
         if verbose:
-            print(f"Turning off {port} for {sleepMin} minutes.")
+            print(f"Turning off {port} for {currentDelay} minutes.")
+
         port.status = False
+
     elif (batteryNumber > -1):
+
         if verbose:
             print(f"Leaving on {port} for {sleepMin} minutes.")
+
     else:
+        currentDelay = max(currentDelay // backoffFactor, minDelay)
+        
         if verbose:
             print(f"Unable to find battery level of this device. Desired level: {batteryLevel} Checked level: {batteryNumber}")
 
@@ -95,5 +102,5 @@ while True:
     if verbose:
         currentTime = datetime.now()
         formattedTime = currentTime.strftime("%Y-%m-%d %H:%M:%S")
-        print(f"Sleeping for {sleepMin} minute(s) at {formattedTime}")
-    time.sleep(int(sleepMin)*60)
+        print(f"Sleeping for {currentDelay} minute(s) at {formattedTime}")
+    time.sleep(int(currentDelay)*60)
