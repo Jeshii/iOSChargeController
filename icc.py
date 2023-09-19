@@ -11,9 +11,9 @@ batteryCommand = ["cfgutil", "get", "batteryCurrentCapacity"]
 
 parser = argparse.ArgumentParser(description='Charge a USB attached iOS device to a specified level')
 parser.add_argument('-l', metavar='batteryLevel',
-                    help='Desired maintenance charge level')
+                    help='Desired maintenance charge level (default is 80%)')
 parser.add_argument('-m', metavar='sleepMin',
-                    help='Minutes between checks')
+                    help='Minutes between checks (default is 10 minutes)')
 parser.add_argument('-v', action='store_true',
                     help='Verbose mode')
 
