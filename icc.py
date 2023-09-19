@@ -10,10 +10,8 @@ from datetime import datetime
 batteryCommand = ["cfgutil", "get", "batteryCurrentCapacity"]
 
 parser = argparse.ArgumentParser(description='Charge a USB attached iOS device to a specified level')
-parser.add_argument('-x', metavar='max',
-                    help='Maximum charge level')
-parser.add_argument('-n', metavar='min',
-                    help='Minimum charge level')
+parser.add_argument('-l', metavar='batteryLevel',
+                    help='Desired maintenance charge level')
 parser.add_argument('-m', metavar='sleepMin',
                     help='Minutes between checks')
 parser.add_argument('-v', action='store_true',
@@ -21,15 +19,10 @@ parser.add_argument('-v', action='store_true',
 
 args = parser.parse_args()
 
-if args.x:
-    max = args.x
+if args.l:
+    batteryLevel = args.l
 else:
-    max = 80
-
-if args.n:
-    min = args.n
-else:
-    min = 20
+    batteryLevel = 80
 
 if args.m:
     sleepMin = args.m
@@ -68,15 +61,15 @@ while True:
     #turn on port
     port.status = True
 
-    #check for battery level
-    batteryLevel = subprocess.run(batteryCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    #check for battery batteryLevel
+    batterybatteryLevel = subprocess.run(batteryCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
     if verbose:
-        print(batteryLevel)
+        print(batterybatteryLevel)
 
-    if batteryLevel.returncode == 0:
+    if batterybatteryLevel.returncode == 0:
         # Extract the number from stdout
-        output = batteryLevel.stdout.strip()  # Remove leading/trailing whitespaces
+        output = batterybatteryLevel.stdout.strip()  # Remove leading/trailing whitespaces
         try:
             batteryNumber = int(output)
         except(ValueError):
@@ -87,20 +80,20 @@ while True:
     else:
         batteryNumber = -1
 
-    if (batteryNumber > -1 and batteryNumber <= int(min)):
-        if verbose:
-            print(f"Leaving on {port} for {sleepMin} minutes.")
-    elif (batteryNumber > -1 and batteryNumber >= int(max)):
+    if (batteryNumber >= int(batteryLevel)):
         if verbose:
             print(f"Turning off {port} for {sleepMin} minutes.")
         port.status = False
+    elif (batteryNumber > -1):
+        if verbose:
+            print(f"Leaving on {port} for {sleepMin} minutes.")
     else:
         if verbose:
-            print(f"Unable to find battery level of this device. Debug: {min} min - {max} max - {batteryNumber}%")
+            print(f"Unable to find battery level of this device. Desired level: {batteryLevel} Checked level: {batteryNumber}")
 
   
     if verbose:
-        current_time = datetime.now()
-        formatted_time = current_time.strftime("%Y-%m-%d %H:%M:%S")
-        print(f"Sleeping for {sleepMin} minute(s) at {formatted_time}")
+        currentTime = datetime.now()
+        formattedTime = currentTime.strftime("%Y-%m-%d %H:%M:%S")
+        print(f"Sleeping for {sleepMin} minute(s) at {formattedTime}")
     time.sleep(int(sleepMin)*60)
