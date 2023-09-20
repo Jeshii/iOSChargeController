@@ -10,10 +10,10 @@ from datetime import datetime
 batteryCommand = ["cfgutil", "get", "batteryCurrentCapacity"]
 
 #backoff values
-currentDelay = 5
-maxDelay = 20*10
+currentDelay = 1
+maxDelay = 60
 minDelay = 1
-backoffFactor = 2  # Factor by which the delay is increased
+backoffAmount = 2
 
 parser = argparse.ArgumentParser(description='Charge a USB attached iOS device to a specified level')
 parser.add_argument('-l', metavar='batteryLevel',
@@ -85,15 +85,16 @@ while True:
         batteryNumber = -1
 
     if (batteryNumber >= int(batteryLevel)):
-        currentDelay = min(max((batteryNumber-80)*10, currentDelay * backoffFactor), maxDelay)
-        
+        #currentDelay = min(max((batteryNumber-int(batteryLevel))*10, currentDelay * backoffFactor), maxDelay)
+        currentDelay = min(max(currentDelay * backoffAmount, batteryNumber-int(batteryLevel)+1), maxDelay)
+
         if verbose:
             print(f"Turning off {port} for {currentDelay} minutes.")
 
         port.status = False
 
     elif (batteryNumber > -1):
-        currentDelay = max(currentDelay // backoffFactor, minDelay)
+        #currentDelay = max(currentDelay // backoffFactor, minDelay)
         if verbose:
             print(f"Leaving on {port} for {currentDelay} minutes.")
 
