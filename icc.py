@@ -11,7 +11,7 @@ batteryCommand = ["cfgutil", "get", "batteryCurrentCapacity"]
 
 #backoff values
 currentDelay = 5
-maxDelay = 60
+maxDelay = 20*10
 minDelay = 1
 backoffFactor = 2  # Factor by which the delay is increased
 
@@ -57,8 +57,13 @@ while not useHub:
                         break
 
 while True:
-    #turn on port
-    port.status = True
+    if verbose:
+        print(f"Port status: {port.status}")
+
+    if not port.status:
+        #turn on port
+        port.status = True
+        time.sleep(60)
 
     #check for battery batteryLevel
     batterybatteryLevel = subprocess.run(batteryCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -80,7 +85,7 @@ while True:
         batteryNumber = -1
 
     if (batteryNumber >= int(batteryLevel)):
-        currentDelay = min(currentDelay * backoffFactor, maxDelay)
+        currentDelay = min(max((batteryNumber-80)*10, currentDelay * backoffFactor), maxDelay)
         
         if verbose:
             print(f"Turning off {port} for {currentDelay} minutes.")
@@ -88,15 +93,34 @@ while True:
         port.status = False
 
     elif (batteryNumber > -1):
-
+        currentDelay = max(currentDelay // backoffFactor, minDelay)
         if verbose:
-            print(f"Leaving on {port} for {sleepMin} minutes.")
+            print(f"Leaving on {port} for {currentDelay} minutes.")
 
     else:
-        currentDelay = max(currentDelay // backoffFactor, minDelay)
-        
+        #currentDelay = max(currentDelay // backoffFactor, minDelay)
+        portNumber = str(usePort).split(".")
+        hubNumber = str(useHub).split(" ")
+        space = " "
+        rawUSBCommand = ["uhubctl", "-l", hubNumber[2], "-p", portNumber[1], "-a", "on", "-N"]
+
         if verbose:
             print(f"Unable to find battery level of this device. Desired level: {batteryLevel} Checked level: {batteryNumber}")
+
+        if verbose:
+            print(f"Attempting raw uhubctl command: {space.join(rawUSBCommand)}")
+
+        forceResult = subprocess.run(rawUSBCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+        if verbose:
+            print(forceResult)
+
+        if forceResult.returncode == 0:
+            if verbose:
+                print("Successfully turned on port with raw uhubctl command...")
+            currentDelay = 1
+
+        
 
   
     if verbose:

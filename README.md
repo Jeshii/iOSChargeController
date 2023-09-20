@@ -6,7 +6,7 @@ Prerequisites:
 - Get this python3 uhubctl wrapper: https://github.com/nbuchwitz/python3-uhubctl
     - Install this by changing to the cloned directory and running `pip3 install .`
 - Get Apple Configurator: https://support.apple.com/apple-configurator
-- Install "Automation Tools" from the Apple Configuration menu
+- Install "Automation Tools" (`cfgutil`) from the Apple Configuration menu
 - Have a USB hub that supports being controlled programmatically (see https://github.com/mvp/uhubctl for a list)
 
 Command line options:
@@ -14,3 +14,6 @@ Command line options:
 -  -l batteryLevel  Desired maintenance charge level (default is 80)
 -  -m sleepMin      Minutes between checks (default is 10)
 -  -v               Verbose mode
+
+Issues:
+- Doesn't work if the iOS device locks as cfgutil is unable to find the device
