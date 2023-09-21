@@ -11,7 +11,7 @@ batteryCommand = ["cfgutil", "get", "batteryCurrentCapacity"]
 
 #backoff values
 currentDelay = 1
-maxDelay = 60
+maxDelay = 45
 minDelay = 1
 backoffAmount = 2
 
@@ -94,7 +94,7 @@ while True:
         port.status = False
 
     elif (batteryNumber > -1):
-        #currentDelay = max(currentDelay // backoffFactor, minDelay)
+        currentDelay = 1
         if verbose:
             print(f"Leaving on {port} for {currentDelay} minutes.")
 
