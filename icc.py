@@ -20,6 +20,8 @@ parser.add_argument('-l', metavar='batteryLevel',
                     help='Desired maintenance charge level (default is 80%)')
 parser.add_argument('-v', action='store_true',
                     help='Verbose mode')
+parser.add_argument('-d', action='store_true',
+                    help='Debug mode')
 
 args = parser.parse_args()
 
@@ -33,6 +35,11 @@ if args.v:
 else:
     verbose = False
 
+if args.d:
+    debug = True
+else:
+    debug = False
+
 # Figure out which hub to use
 hubs = uhubctl.discover_hubs()
 useHub = False
@@ -42,7 +49,7 @@ while not useHub:
     for hub in hubs:
         print(f"Found hub: {hub}")
         hubCheck = input("Would you like to use this hub? (y/n) ")
-        if verbose:
+        if debug:
             print(f"{useHub} - {hubCheck}")
         if hubCheck == "Y" or hubCheck == "y":
             useHub = hub
@@ -50,7 +57,7 @@ while not useHub:
                 for port in hub.ports:
                     print(f"Found port: {port} - {port.description()}")
                     portCheck = input("Would you like to use this port? (y/n) ")
-                    if verbose:
+                    if debug:
                         print(f"{usePort} - {portCheck}")
                     if portCheck == "Y" or portCheck == "y":
                         usePort = port
@@ -58,7 +65,12 @@ while not useHub:
 
 while True:
     if verbose:
-        print(f"Port status: {port.status}")
+        currentTime = datetime.now()
+        formattedTime = currentTime.strftime("%Y-%m-%d %H:%M:%S")
+        print(f"{formattedTime}")
+
+    if debug:
+        print(f"Current port status: {port.status}")
 
     if not port.status:
         #turn on port
@@ -68,7 +80,7 @@ while True:
     #check for battery batteryLevel
     batterybatteryLevel = subprocess.run(batteryCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-    if verbose:
+    if debug:
         print(batterybatteryLevel)
 
     if batterybatteryLevel.returncode == 0:
@@ -89,14 +101,14 @@ while True:
         currentDelay = min(max(currentDelay * backoffAmount, batteryNumber-int(batteryLevel)+1), maxDelay)
 
         if verbose:
-            print(f"Turning off {port} for {currentDelay} minutes.")
+            print(f"{port}: Off")
 
         port.status = False
 
     elif (batteryNumber > -1):
         currentDelay = 1
         if verbose:
-            print(f"Leaving on {port} for {currentDelay} minutes.")
+            print(f"{port}: On")
 
     else:
         #currentDelay = max(currentDelay // backoffFactor, minDelay)
@@ -106,14 +118,15 @@ while True:
         rawUSBCommand = ["uhubctl", "-l", hubNumber[2], "-p", portNumber[1], "-a", "on", "-N"]
 
         if verbose:
-            print(f"Unable to find battery level of this device. Desired level: {batteryLevel} Checked level: {batteryNumber}")
-
-        if verbose:
+            print(f"Unable to find battery level of this device.")
+        
+        if debug:
+            print(f"Desired level: {batteryLevel} Checked level: {batteryNumber}")
             print(f"Attempting raw uhubctl command: {space.join(rawUSBCommand)}")
 
         forceResult = subprocess.run(rawUSBCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-        if verbose:
+        if debug:
             print(forceResult)
 
         if forceResult.returncode == 0:
@@ -121,11 +134,9 @@ while True:
                 print("Successfully turned on port with raw uhubctl command...")
             currentDelay = 1
 
-        
-
-  
     if verbose:
-        currentTime = datetime.now()
-        formattedTime = currentTime.strftime("%Y-%m-%d %H:%M:%S")
-        print(f"Sleeping for {currentDelay} minute(s) at {formattedTime}")
+        if currentDelay > 1:
+            print(f"Sleeping for {currentDelay} minutes")
+        else:
+            print(f"Sleeping for {currentDelay} minute")
     time.sleep(int(currentDelay)*60)
