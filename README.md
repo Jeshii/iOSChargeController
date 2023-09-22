@@ -15,5 +15,5 @@ Command line options:
 -  -m sleepMin      Minutes between checks (default is 10)
 -  -v               Verbose mode
 
-Issues:
-- Doesn't work if the iOS device locks as cfgutil is unable to find the device
+Todo:
+- Add argument to specify hub and port
