@@ -91,7 +91,7 @@ while True:
         except(ValueError):
             print(f"Please unlock your device.")
             batteryNumber = -1
-        if verbose:
+        if verbose and batteryNumber > -1:
             print(f"Battery level: {batteryNumber}%")
     else:
         batteryNumber = -1
@@ -112,27 +112,27 @@ while True:
 
     else:
         #currentDelay = max(currentDelay // backoffFactor, minDelay)
-        portNumber = str(usePort).split(".")
-        hubNumber = str(useHub).split(" ")
-        space = " "
-        rawUSBCommand = ["uhubctl", "-l", hubNumber[2], "-p", portNumber[1], "-a", "on", "-N"]
+        #portNumber = str(usePort).split(".")
+        #hubNumber = str(useHub).split(" ")
+        #space = " "
+        #rawUSBCommand = ["uhubctl", "-l", hubNumber[2], "-p", portNumber[1], "-a", "on", "-N"]
 
         if verbose:
             print(f"Unable to find battery level of this device.")
         
         if debug:
             print(f"Desired level: {batteryLevel} Checked level: {batteryNumber}")
-            print(f"Attempting raw uhubctl command: {space.join(rawUSBCommand)}")
+        #    print(f"Attempting raw uhubctl command: {space.join(rawUSBCommand)}")
 
-        forceResult = subprocess.run(rawUSBCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        #forceResult = subprocess.run(rawUSBCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
-        if debug:
-            print(forceResult)
+        #if debug:
+        #    print(forceResult)
 
-        if forceResult.returncode == 0:
-            if verbose:
-                print("Successfully turned on port with raw uhubctl command...")
-            currentDelay = 1
+        #if forceResult.returncode == 0:
+        #    if verbose:
+        #        print("Successfully turned on port with raw uhubctl command...")
+        #    currentDelay = 1
 
     if verbose:
         if currentDelay > 1:
