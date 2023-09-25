@@ -111,7 +111,7 @@ while True:
             print(f"{port}: On")
 
     else:
-        #currentDelay = max(currentDelay // backoffFactor, minDelay)
+        currentDelay = max(currentDelay // backoffAmount, minDelay)
         #portNumber = str(usePort).split(".")
         #hubNumber = str(useHub).split(" ")
         #space = " "
@@ -124,6 +124,7 @@ while True:
             print(f"Desired level: {batteryLevel} Checked level: {batteryNumber}")
         #    print(f"Attempting raw uhubctl command: {space.join(rawUSBCommand)}")
 
+        #currentDelay = 1
         #forceResult = subprocess.run(rawUSBCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         #if debug:
@@ -132,7 +133,7 @@ while True:
         #if forceResult.returncode == 0:
         #    if verbose:
         #        print("Successfully turned on port with raw uhubctl command...")
-        #    currentDelay = 1
+
 
     if verbose:
         if currentDelay > 1:
