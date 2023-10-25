@@ -40,30 +40,41 @@ if args.d:
 else:
     debug = False
 
-# Figure out which hub to use
-hubs = uhubctl.discover_hubs()
-useHub = False
-usePort = False
 
-while not useHub:
-    for hub in hubs:
-        print(f"Found hub: {hub}")
-        hubCheck = input("Would you like to use this hub? (y/n) ")
-        if debug:
-            print(f"{useHub} - {hubCheck}")
-        if hubCheck == "Y" or hubCheck == "y":
-            useHub = hub
-            while not usePort:
-                for port in hub.ports:
+def find_device():
+    # Figure out which hub to use
+    hubs = uhubctl.discover_hubs()
+    usePort = False
+
+    while not usePort:
+        for hub in hubs:
+            if verbose:
+                print(f"Found hub: {hub}")
+            for port in hub.ports:
+                if verbose:
                     print(f"Found port: {port} - {port.description()}")
-                    portCheck = input("Would you like to use this port? (y/n) ")
-                    if debug:
-                        print(f"{usePort} - {portCheck}")
-                    if portCheck == "Y" or portCheck == "y":
-                        usePort = port
-                        break
+                # Turn on any ports that might be off
+                port.status = True
+                # Wait while the port comes online
+                time.sleep(5)
+                # Check the port description
+                port_desc = port.description() 
+                if port_desc and ('iPhone' in port_desc or 'iPad' in port_desc):
+                    usePort = port
+                    if verbose:
+                        print(f"Using port: {port} - {port.description()}")
+                    return usePort
+        
+        # If nothing iPad or iPhone is found, go ahead and sleep for an hour before checking again
+        if not usePort:
+            if verbose:
+                print("No ports found, going to sleep...")
+            time.sleep(5*60)
+    
+port = find_device()
 
 while True:
+
     if verbose:
         currentTime = datetime.now()
         formattedTime = currentTime.strftime("%Y-%m-%d %H:%M:%S")
@@ -111,28 +122,16 @@ while True:
             print(f"{port}: On")
 
     else:
+        # Back off, and recheck ports
         currentDelay = max(currentDelay // backoffAmount, minDelay)
-        #portNumber = str(usePort).split(".")
-        #hubNumber = str(useHub).split(" ")
-        #space = " "
-        #rawUSBCommand = ["uhubctl", "-l", hubNumber[2], "-p", portNumber[1], "-a", "on", "-N"]
 
         if verbose:
-            print(f"Unable to find battery level of this device.")
+            print(f"Unable to find battery level of this device... Checking hubs again...")
         
         if debug:
             print(f"Desired level: {batteryLevel} Checked level: {batteryNumber}")
-        #    print(f"Attempting raw uhubctl command: {space.join(rawUSBCommand)}")
-
-        #currentDelay = 1
-        #forceResult = subprocess.run(rawUSBCommand, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-        #if debug:
-        #    print(forceResult)
-
-        #if forceResult.returncode == 0:
-        #    if verbose:
-        #        print("Successfully turned on port with raw uhubctl command...")
+        
+        port = find_device()
 
 
     if verbose:
